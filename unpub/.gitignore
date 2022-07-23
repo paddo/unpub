@@ -12,5 +12,3 @@ doc/api/
 unpub-packages/
 .vscode/
 
-# codegen stuff
-*.g.dart
