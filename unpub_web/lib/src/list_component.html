@@ -1,16 +1,15 @@
 <main *ngIf="data != null">
-  <p class="package-count"><span>{{ data.count }}</span> results</p>
+  <p class="package-count"><span>{{ data!.count }}</span> results</p>
 
   <ul class="package-list">
-    <li class="list-item -full" *ngFor="let package of data.packages">
+    <li class="list-item -full" *ngFor="let package of data!.packages">
       <h3 class="title">
         <a [routerLink]="getDetailUrl(package)">{{ package.name }}</a>
       </h3>
       <p class="description">{{ package.description }}</p>
       <p class="metadata">
         v <a [routerLink]="getDetailUrl(package)">{{ package.latest }}</a>
-
-        • Updated: <span>{{ package.updatedAt | date: "mediumDate" }}</span>
+        • Updated: <span>{{ package.updatedAt }}</span>
         <span class="package-tag" *ngFor="let tag of package.tags"
           >{{ tag }}</span
         >
@@ -19,7 +18,7 @@
   </ul>
   <ul class="pagination">
     <li [class.-disabled]="currentPage == 0">
-      <a [routerLink]="getListUrl(currentPage - 1)">
+      <a [routerLink]="getListUrl((currentPage ?? 0) - 1)">
         <span>«</span>
       </a>
     </li>
@@ -29,7 +28,7 @@
       </a>
     </li>
     <li [class.-disabled]="currentPage == pageCount - 1">
-      <a [routerLink]="getListUrl(currentPage + 1)">
+      <a [routerLink]="getListUrl((currentPage ?? 0) + 1)">
         <span>»</span>
       </a>
     </li>

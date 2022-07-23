@@ -9,8 +9,7 @@ class RoutePaths {
   static final home = RoutePath(path: '');
   static final list = RoutePath(path: 'packages');
   static final detail = RoutePath(path: 'packages/:name');
-  static final detailVersion =
-      RoutePath(path: 'packages/:name/versions/:version');
+  static final detailVersion = RoutePath(path: 'packages/:name/versions/:version');
 }
 
 class Routes {

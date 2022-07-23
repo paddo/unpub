@@ -14,10 +14,8 @@ const _tokenEndpoint = 'https://oauth2.googleapis.com/token';
 const _authEndpoint = 'https://accounts.google.com/o/oauth2/auth';
 const _scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email'];
 
-get _identifier => utf8.decode(base64.decode(
-    r'NDY4NDkyNDU2MjM5LTJja2wxdTB1dGloOHRzZWtnMGxpZ2NpY2VqYm8wbnZkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t'));
-get _secret => utf8
-    .decode(base64.decode(r'R09DU1BYLUxHMWZTV052UjA0S0NrWVZRMTVGS3J1cGJ5bFk='));
+get _identifier => utf8.decode(base64.decode(r'NDY4NDkyNDU2MjM5LTJja2wxdTB1dGloOHRzZWtnMGxpZ2NpY2VqYm8wbnZkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t'));
+get _secret => utf8.decode(base64.decode(r'R09DU1BYLUxHMWZTV052UjA0S0NrWVZRMTVGS3J1cGJ5bFk='));
 
 enum Flow {
   login,
@@ -53,12 +51,10 @@ Future<void> migrate(Object? args) async {
     exit(1);
   }
 
-  final isValid =
-      oauth2.Credentials.fromJson(await File(args).readAsString()).isValid();
+  final isValid = oauth2.Credentials.fromJson(await File(args).readAsString()).isValid();
   if (isValid) {
     await File(args).copy(Utils.credentialsFilePath);
-    Utils.stdoutPrint(
-        'Migrate from $args success.\nNew credentials file is saved at ${Utils.credentialsFilePath}');
+    Utils.stdoutPrint('Migrate from $args success.\nNew credentials file is saved at ${Utils.credentialsFilePath}');
     return;
   }
 }
@@ -93,10 +89,8 @@ void writeNewCredentials(oauth2.Credentials credentials) {
 
 /// Refresh `accessToken` of credentials
 Future<void> refreshCredentials(oauth2.Credentials credentials) async {
-  final client = oauth2.Client(
-      oauth2.Credentials.fromJson(credentials.toJson()),
-      identifier: _identifier,
-      secret: _secret, onCredentialsRefreshed: (credential) async {
+  final client = oauth2.Client(oauth2.Credentials.fromJson(credentials.toJson()), identifier: _identifier, secret: _secret,
+      onCredentialsRefreshed: (credential) async {
     writeNewCredentials(credential);
   });
   await client.refreshCredentials();
@@ -105,8 +99,7 @@ Future<void> refreshCredentials(oauth2.Credentials credentials) async {
 
 /// Create a client with authorization.
 Future<oauth2.Client> clientWithAuthorization() async {
-  final grant = oauth2.AuthorizationCodeGrant(
-      _identifier, Uri.parse(_authEndpoint), Uri.parse(_tokenEndpoint),
+  final grant = oauth2.AuthorizationCodeGrant(_identifier, Uri.parse(_authEndpoint), Uri.parse(_tokenEndpoint),
       secret: _secret, basicAuth: false, httpClient: http.Client());
 
   final completer = Completer();
@@ -128,22 +121,16 @@ Future<oauth2.Client> clientWithAuthorization() async {
     Utils.stdoutPrint('Authorization received, processing...');
 
     /// Redirect to authorized page.
-    final resp =
-        shelf.Response.found('http://localhost:${server.port}/authorized');
+    final resp = shelf.Response.found('http://localhost:${server.port}/authorized');
 
-    completer.complete(
-        grant.handleAuthorizationResponse(Utils.queryToMap(request.url.query)));
+    completer.complete(grant.handleAuthorizationResponse(Utils.queryToMap(request.url.query)));
 
     return resp;
   });
 
-  final authUrl = grant
-          .getAuthorizationUrl(Uri.parse('http://localhost:${server.port}'),
-              scopes: _scopes)
-          .toString() +
+  final authUrl = grant.getAuthorizationUrl(Uri.parse('http://localhost:${server.port}'), scopes: _scopes).toString() +
       '&access_type=offline&approval_prompt=force';
-  Utils.stdoutPrint(
-      'unpub needs your authorization to upload packages on your behalf.\n'
+  Utils.stdoutPrint('unpub needs your authorization to upload packages on your behalf.\n'
       'In a web browser, go to $authUrl\n'
       'Then click "Allow access".\n\n'
       'Waiting for your authorization...');

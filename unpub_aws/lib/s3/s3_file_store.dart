@@ -1,6 +1,8 @@
 import 'dart:async';
+// ignore: deprecated_member_use
 import 'dart:cli';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:minio/minio.dart';
 import 'package:unpub/unpub.dart';
@@ -17,13 +19,7 @@ class S3Store extends PackageStore {
   Minio? minio;
   Map<String, String>? environment;
 
-  S3Store(this.bucketName,
-      {this.region,
-        this.getObjectPath,
-        this.endpoint,
-        this.credentials,
-        this.minio, this.environment}) {
-
+  S3Store(this.bucketName, {this.region, this.getObjectPath, this.endpoint, this.credentials, this.minio, this.environment}) {
     final env = environment ?? Platform.environment;
 
     // Check for env vars or container credentials if none were provided.
@@ -38,9 +34,7 @@ class S3Store extends PackageStore {
     );
 
     // Check for a region or default region which is required
-    if (region == null &&
-        (env['AWS_DEFAULT_REGION'] == null ||
-            env['AWS_DEFAULT_REGION']!.isEmpty)) {
+    if (region == null && (env['AWS_DEFAULT_REGION'] == null || env['AWS_DEFAULT_REGION']!.isEmpty)) {
       throw ArgumentError('Could not determine a default region for aws.');
     }
   }
@@ -51,12 +45,12 @@ class S3Store extends PackageStore {
 
   @override
   Future<void> upload(String name, String version, List<int> content) async {
-    await minio!.putObject(
-        bucketName, _getObjectKey(name, version), Stream.value(content));
+    await minio!.putObject(bucketName, _getObjectKey(name, version), Stream.value(Uint8List.fromList(content)));
   }
 
   @override
   Stream<List<int>> download(String name, String version) {
+    // ignore: deprecated_member_use
     return waitFor(minio!.getObject(bucketName, _getObjectKey(name, version)));
   }
 }

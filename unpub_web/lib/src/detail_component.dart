@@ -31,17 +31,15 @@ class DetailComponent implements OnInit, OnActivate {
   final AppService appService;
   DetailComponent(this.appService);
 
-  WebapiDetailView package;
-  String packageName;
-  String packageVersion;
+  WebapiDetailView? package;
+  String? packageName;
+  String? packageVersion;
   int activeTab = 0;
   bool packageNotExists = false;
 
-  String get readmeHtml =>
-      package.readme == null ? null : markdownToHtml(package.readme);
+  String? get readmeHtml => package?.readme == null ? null : markdownToHtml(package!.readme!);
 
-  String get changelogHtml =>
-      package.changelog == null ? null : markdownToHtml(package.changelog);
+  String? get changelogHtml => package?.changelog == null ? null : markdownToHtml(package!.changelog!);
 
   String get pubDevLink {
     var url = 'https://pub.dev/packages/$packageName';
@@ -68,10 +66,8 @@ class DetailComponent implements OnInit, OnActivate {
       try {
         package = await appService.fetchPackage(name, version);
         await Future.delayed(Duration(seconds: 0)); // Next tick
-        querySelector('#readme')
-            .setInnerHtml(readmeHtml, validator: _htmlValidator);
-        querySelector('#changelog')
-            .setInnerHtml(changelogHtml, validator: _htmlValidator);
+        querySelector('#readme')!.setInnerHtml(readmeHtml, validator: _htmlValidator);
+        querySelector('#changelog')!.setInnerHtml(changelogHtml, validator: _htmlValidator);
       } on PackageNotExistsException {
         packageNotExists = true;
       } finally {
@@ -84,12 +80,11 @@ class DetailComponent implements OnInit, OnActivate {
     return RoutePaths.list.toUrl(queryParameters: {'q': q});
   }
 
-  getDetailUrl(String name, [String version]) {
+  getDetailUrl(String name, [String? version]) {
     if (version == null) {
       return RoutePaths.detail.toUrl(parameters: {'name': name});
     } else {
-      return RoutePaths.detailVersion
-          .toUrl(parameters: {'name': name, 'version': version});
+      return RoutePaths.detailVersion.toUrl(parameters: {'name': name, 'version': version});
     }
   }
 }

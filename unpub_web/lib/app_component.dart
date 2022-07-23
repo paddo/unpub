@@ -22,9 +22,7 @@ class AppComponent {
     if (appService.keyword == '') {
       return html.window.alert('keyword empty');
     }
-    var result = await _router.navigate(RoutePaths.list.toUrl(),
-        NavigationParams(queryParameters: {'q': appService.keyword}));
-    // print(result);
+    await _router.navigate(RoutePaths.list.toUrl(), NavigationParams(queryParameters: {'q': appService.keyword}));
   }
 
   String get homeUrl => RoutePaths.home.toUrl();

@@ -13,21 +13,15 @@ class MongoStore extends MetaStore {
 
   static SelectorBuilder _selectByName(String? name) => where.eq('name', name);
 
-  Future<UnpubQueryResult> _queryPackagesBySelector(
-      SelectorBuilder selector) async {
+  Future<UnpubQueryResult> _queryPackagesBySelector(SelectorBuilder selector) async {
     final count = await db.collection(packageCollection).count(selector);
-    final packages = await db
-        .collection(packageCollection)
-        .find(selector)
-        .map((item) => UnpubPackage.fromJson(item))
-        .toList();
+    final packages = await db.collection(packageCollection).find(selector).map((item) => UnpubPackage.fromJson(item)).toList();
     return UnpubQueryResult(count, packages);
   }
 
   @override
   queryPackage(name) async {
-    var json =
-        await db.collection(packageCollection).findOne(_selectByName(name));
+    var json = await db.collection(packageCollection).findOne(_selectByName(name));
     if (json == null) return null;
     return UnpubPackage.fromJson(json);
   }
@@ -48,27 +42,19 @@ class MongoStore extends MetaStore {
 
   @override
   addUploader(name, email) async {
-    await db
-        .collection(packageCollection)
-        .update(_selectByName(name), modify.push('uploaders', email));
+    await db.collection(packageCollection).update(_selectByName(name), modify.push('uploaders', email));
   }
 
   @override
   removeUploader(name, email) async {
-    await db
-        .collection(packageCollection)
-        .update(_selectByName(name), modify.pull('uploaders', email));
+    await db.collection(packageCollection).update(_selectByName(name), modify.pull('uploaders', email));
   }
 
   @override
   increaseDownloads(name, version) {
     var today = DateFormat('yyyyMMdd').format(DateTime.now());
-    db
-        .collection(packageCollection)
-        .update(_selectByName(name), modify.inc('download', 1));
-    db
-        .collection(statsCollection)
-        .update(_selectByName(name), modify.inc('d$today', 1));
+    db.collection(packageCollection).update(_selectByName(name), modify.inc('download', 1));
+    db.collection(statsCollection).update(_selectByName(name), modify.inc('d$today', 1));
   }
 
   @override
@@ -80,8 +66,7 @@ class MongoStore extends MetaStore {
     uploader,
     dependency,
   }) {
-    var selector =
-        where.sortBy(sort, descending: true).limit(size).skip(page * size);
+    var selector = where.sortBy(sort, descending: true).limit(size).skip(page * size);
 
     if (keyword != null) {
       selector = selector.match('name', '.*$keyword.*');

@@ -25,10 +25,7 @@ main(List<String> args) async {
         // Don't be bad at security populate env vars instead...
         // AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxx
         // AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        credentials: unpub_aws.AwsCredentials(
-            awsAccessKeyId: '',
-            awsSecretAccessKey: '',
-            awsSessionToken: '')),
+        credentials: unpub_aws.AwsCredentials(awsAccessKeyId: '', awsSecretAccessKey: '', awsSessionToken: '')),
   );
 
   final server = await app.serve('0.0.0.0', 4000);

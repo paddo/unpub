@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:angular/angular.dart';
 import 'package:http/http.dart' as http;
-import 'package:angular/core.dart';
 import 'package:unpub_web/constants.dart';
 import 'src/routes.dart';
 import 'package:unpub_api/models.dart';
@@ -19,12 +19,8 @@ class AppService {
     loading = value;
   }
 
-  Future _fetch(String path,
-      [Map<String, dynamic> queryParameters = const {}]) async {
-    queryParameters.entries
-        .where((entry) => entry.value == null)
-        .toList()
-        .forEach((entry) => queryParameters.remove(entry.key));
+  Future _fetch(String path, [Map<String, dynamic> queryParameters = const {}]) async {
+    queryParameters.entries.where((entry) => entry.value == null).toList().forEach((entry) => queryParameters.remove(entry.key));
 
     var baseUrl = isProduction ? '' : 'http://localhost:4000';
     var uri = Uri.parse(baseUrl).replace(
@@ -45,14 +41,12 @@ class AppService {
     return data['data'];
   }
 
-  Future<ListApi> fetchPackages(
-      {int size, int page, String sort, String q}) async {
-    var res = await _fetch(
-        '/webapi/packages', {'size': size, 'page': page, 'sort': sort, 'q': q});
+  Future<ListApi> fetchPackages({int? size, int? page, String? sort, String? q}) async {
+    var res = await _fetch('/webapi/packages', {'size': size, 'page': page, 'sort': sort, 'q': q});
     return ListApi.fromJson(res);
   }
 
-  Future<WebapiDetailView> fetchPackage(String name, String version) async {
+  Future<WebapiDetailView> fetchPackage(String name, String? version) async {
     version = version ?? 'latest';
     var res = await _fetch('/webapi/package/$name/$version');
     return WebapiDetailView.fromJson(res);
