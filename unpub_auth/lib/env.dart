@@ -90,7 +90,7 @@ class Env {
     final maxVariableLength = _all.keys.map((key) => key.length).reduce(max) + _envPrefix.length;
     final padding = 10;
     final maxColLength = ((terminalCols - maxVariableLength - padding) / 2).floor();
-    final boundaries = <int>[0, maxVariableLength + 3, maxVariableLength + maxColLength + 6, maxVariableLength + maxColLength * 2 + 9];
+    final boundaries = <int>[0, maxVariableLength + 3, maxVariableLength + maxColLength + 6, terminalCols - 1];
 
     return _separator(boundaries) +
         '|' +

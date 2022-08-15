@@ -34,15 +34,15 @@ It uses the device code flow to get an initial auth token.
 There's two situations where the unpub_auth can be used.
 
 {@yellow}1. Login locally, and publish pub packages locally.{@end}
-  {@blue}step 1.{@end} Call `unpub_auth login` when you first use it, and it will save credentials locally.
-  {@blue}step 2.{@end} Before calling `dart pub publish` or `flutter pub publish`, call `unpub_auth get | dart pub token add <self-hosted-pub-server>`
+  {@blue}step 1.{@end} Call {@cyan}'unpub_auth login'{@end} when you first use it, and it will save credentials locally.
+  {@blue}step 2.{@end} Before calling 'dart pub publish' or 'flutter pub publish', call {@cyan}'unpub_auth get | dart pub token add <self-hosted-pub-server>'{@end}
   
 {@yellow}2. Login locally, and publish pub packages from CI/CD.{@end}
-{@yellow}   On CI/CD host device, you may not have opportunity to call `unpub_auth login`, so you can use `unpub_auth migrate` to migrate the credentials file.{@end}
-  {@blue}step 1.{@end} In local device, call `unpub_auth login` when you first use it, and it will save credentials locally.
-  {@blue}step 2.{@end} Copy the credentials file which was generated in step 1 to CI/CD device.
-  {@blue}step 3.{@end} In CI/CD device, call `unpub_auth migrate <credentials-file-path>`, so the CI/CD will have the same credentials file.
-  {@blue}step 4.{@end} In CI/CD device, before calling `dart pub publish` or `flutter pub publish`, call `unpub_auth get | dart pub token add <self-hosted-pub-server>`
+{@yellow}   On CI/CD host device, you cannot call 'unpub_auth login', so you can use 'unpub_auth import' to import the credentials file.{@end}
+  {@blue}step 1.{@end} In local device, call {@cyan}'unpub_auth login'{@end} when you first use it, and it will save credentials locally.
+  {@blue}step 2.{@end} Copy the credentials file which was generated in step 1 to CI/CD device. Use {@cyan}'unpub_auth export <credentials-file-path>'{@end} to get a copy.
+  {@blue}step 3.{@end} In CI/CD device, call {@cyan}'unpub_auth import <credentials-file-path>'{@end}, so the CI/CD will have the same credentials file.
+  {@blue}step 4.{@end} In CI/CD device, before calling 'dart pub publish' or 'flutter pub publish', call {@cyan}'unpub_auth get | dart pub token add <self-hosted-pub-server>'{@end}
 
 Usage: {@green}unpub_auth {@cyan}<command> {@blue}[arguments]{@end}
 
@@ -51,9 +51,7 @@ Usage: {@green}unpub_auth {@cyan}<command> {@blue}[arguments]{@end}
   {@green}get{@end}             Refresh and get a new accessToken. Can be piped into {@cyan}'dart pub token add <self-hosted-pub-server>'.
   {@green}logout{@end}          Delete local credentials file, and revoke token if provider supports it.
   {@green}import {@cyan}<path>{@end}   Import credentials file from {@cyan}path{@end}.
-  {@green}export {@cyan}<path>{@end}   Import credentials file to {@cyan}path{@end}.
-
-{@blue}SUPPORTED ENVIRONMENT VARIABLES{@end}
+  {@green}export {@cyan}<path>{@end}   Export credentials file to {@cyan}path{@end}.
 
 {table}
 
