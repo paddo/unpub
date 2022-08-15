@@ -1,44 +1,37 @@
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:console/console.dart';
-import 'package:unpub_auth/unpub_auth.dart' as unpub_auth;
-import 'package:unpub_auth/utils.dart';
+import 'package:unpub_auth/env.dart';
+import 'package:unpub_auth/extensions.dart';
+import 'package:unpub_auth/models.dart';
+import 'package:unpub_auth/unpub_auth.dart';
 
-void main(List<String> arguments) async {
-  final parser = ArgParser();
-  parser.addCommand('login');
-  parser.addCommand('logout');
-  parser.addCommand('migrate');
-  parser.addCommand('get');
+void main(List<String> args) async {
+  // args:
+  // unpub_auth login|logout|get|import|export <file>
 
-  final result = parser.parse(arguments);
+  if (args.isEmpty) exitPrintUsage('Wrong number of arguments');
 
-  unpub_auth.Flow flow = unpub_auth.Flow.getToken;
+  final action = Action.values.parse(args[0] == 'get' ? 'getToken' : args[0]);
+  if (action == null) exitPrintUsage('action is invalid');
 
-  Object? subArgs;
+  if (action == Action.import || action == Action.export) {
+    if (args.length < 2) exitPrintUsage('You must provide a file path');
+  }
 
-  switch (result.command?.name) {
-    case 'login':
-      flow = unpub_auth.Flow.login;
-      break;
-    case 'logout':
-      flow = unpub_auth.Flow.logout;
-      break;
-    case 'migrate':
-      flow = unpub_auth.Flow.migrate;
-      if (result.command?.arguments.length != 1) {
-        Utils.stdoutPrint("unpub_auth migrate need a path argument");
-        exit(1);
-      }
-      subArgs = result.command?.arguments.first;
-      break;
-    case 'get':
-      flow = unpub_auth.Flow.getToken;
-      break;
-    default:
-      stdout.write(format('''
-An auth tool for unpub. unpub is using Google OAuth2 by default. There's two situations where the unpub_auth can be used.
+  await run(action: action!, importExportFile: args.length > 1 ? args[1] : null);
+  exit(0);
+}
+
+void exitPrintUsage(String? error) {
+  stdout.write(format('''
+An auth tool for unpub. 
+{@gold}======================={@end}
+
+The tool presently works for microsoft or google auth, though other providers may be easily added. 
+It uses the device code flow to get an initial auth token.
+
+There's two situations where the unpub_auth can be used.
 
 {@yellow}1. Login locally, and publish pub packages locally.{@end}
   {@blue}step 1.{@end} Call `unpub_auth login` when you first use it, and it will save credentials locally.
@@ -51,17 +44,20 @@ An auth tool for unpub. unpub is using Google OAuth2 by default. There's two sit
   {@blue}step 3.{@end} In CI/CD device, call `unpub_auth migrate <credentials-file-path>`, so the CI/CD will have the same credentials file.
   {@blue}step 4.{@end} In CI/CD device, before calling `dart pub publish` or `flutter pub publish`, call `unpub_auth get | dart pub token add <self-hosted-pub-server>`
 
-Usage: {@green}unpub_auth <command> [arguments]{@end}
+Usage: {@green}unpub_auth {@cyan}<command> {@blue}[arguments]{@end}
 
-Available commands:
-  {@green}get{@end}             Refresh and get a new accessToken. Must login first.
-  {@green}login{@end}           Login unpub_auth on Google APIs.
-  {@green}logout{@end}          Delete local credentials file.
-  {@green}migrate{@end} {@green}<path>{@end}  Migrate existed credentials file from path.
-'''));
-      exit(0);
-  }
+{@yellow}Available commands:
+  {@green}login{@end}           Initial login. {@red}This must be run first.{@end}
+  {@green}get{@end}             Refresh and get a new accessToken. Can be piped into {@cyan}'dart pub token add <self-hosted-pub-server>'.
+  {@green}logout{@end}          Delete local credentials file, and revoke token if provider supports it.
+  {@green}import {@cyan}<path>{@end}   Import credentials file from {@cyan}path{@end}.
+  {@green}export {@cyan}<path>{@end}   Import credentials file to {@cyan}path{@end}.
 
-  await unpub_auth.run(flow: flow, args: subArgs);
-  exit(0);
+{@blue}SUPPORTED ENVIRONMENT VARIABLES{@end}
+
+{table}
+
+''', replace: {'table': Env.instance.table}));
+
+  exit(error != null ? 1 : 0);
 }

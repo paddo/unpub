@@ -2,162 +2,127 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:shelf/shelf.dart' as shelf;
-import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:oauth2/oauth2.dart' as oauth2;
-import 'package:http/http.dart' as http;
+import 'package:unpub_auth/env.dart';
+import 'package:unpub_auth/extensions.dart';
+import 'package:unpub_auth/models.dart';
+import 'package:path/path.dart' as p;
 
-import 'utils.dart';
-import 'credentials_ext.dart';
-
-const _tokenEndpoint = 'https://oauth2.googleapis.com/token';
-const _authEndpoint = 'https://accounts.google.com/o/oauth2/auth';
-const _scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email'];
-
-get _identifier => utf8.decode(base64.decode(r'NDY4NDkyNDU2MjM5LTJja2wxdTB1dGloOHRzZWtnMGxpZ2NpY2VqYm8wbnZkLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t'));
-get _secret => utf8.decode(base64.decode(r'R09DU1BYLUxHMWZTV052UjA0S0NrWVZRMTVGS3J1cGJ5bFk='));
-
-enum Flow {
-  login,
-  logout,
-  migrate,
-  getToken,
-}
-
-Future<void> run({Flow flow = Flow.getToken, Object? args}) async {
-  switch (flow) {
-    case Flow.login:
-      await _goAuth();
+Future<void> run({required Action action, String? importExportFile}) async {
+  switch (action) {
+    case Action.login:
+      await _loginWithDeviceCode();
       break;
-    case Flow.logout:
-      await removeCredentialsFromLocal();
+    case Action.logout:
+      await _revokeToken();
       break;
-    case Flow.migrate:
-      await migrate(args);
+    case Action.import:
+      await _importFile(importExportFile!);
       break;
-    case Flow.getToken:
-      await getToken();
+    case Action.export:
+      await _exportFile(importExportFile!);
+      break;
+    case Action.getToken:
+    default:
+      await _getToken();
       break;
   }
 }
 
-Future<void> migrate(Object? args) async {
-  if (args == null || args is! String) {
-    Utils.stdoutPrint("$args is invalid");
+Future<HttpClientResponse> _request(String uri, String postArgs) async {
+  final bodyBytes = utf8.encode(postArgs);
+  final request = await HttpClient().postUrl(Uri.parse(uri))
+    ..headers.contentType = ContentType.parse('application/x-www-form-urlencoded')
+    ..headers.set('Content-Length', bodyBytes.length.toString())
+    ..headers.set('Accept', 'application/json');
+
+  request.add(bodyBytes);
+  final response = await request.close();
+  return response;
+}
+
+Future<T> _decodeResponse<T>(HttpClientResponse response, T Function(Map<String, dynamic> json) factory) async {
+  final body = await response.transform(utf8.decoder).join();
+  final json = jsonDecode(body);
+  return factory(json);
+}
+
+Future<void> _revokeToken() async {
+  final env = Env.instance;
+  // optionally, we can actually revoke the token here
+  if (env.revokeUri.isNotEmpty && File(env.credentialsFilePath).existsSync()) {
+    final refreshToken = Token.fromJson(File(env.credentialsFilePath).readAsStringSync().decodeJson()).refreshToken;
+    if (refreshToken.isNotEmpty) await _request(env.revokeUri, env.revokePostArgs(refreshToken));
+  }
+
+  await File(Env.instance.credentialsFilePath).delete();
+  print('${Env.instance.credentialsFilePath} has been deleted.');
+}
+
+Future<void> _getToken() async {}
+
+Future<void> _loginWithDeviceCode() async {
+  final env = Env.instance;
+  final response = await _request(env.deviceCodeUri, env.deviceCodePostArgs);
+
+  if (response.statusCode != 200) {
+    print('Failed to get device code.\n${response.reasonPhrase}');
     exit(1);
   }
-  if (File(args).existsSync() == false) {
-    Utils.stdoutPrint("$args is not exist.");
-    exit(1);
-  }
 
-  final isValid = oauth2.Credentials.fromJson(await File(args).readAsString()).isValid();
-  if (isValid) {
-    await File(args).copy(Utils.credentialsFilePath);
-    Utils.stdoutPrint('Migrate from $args success.\nNew credentials file is saved at ${Utils.credentialsFilePath}');
-    return;
+  final result = await _decodeResponse(response, (json) => DeviceCodeResult.fromJson(env.provider, json));
+  print('To sign in, use a web browser to open the page ${result.verificationUri} and enter the code ${result.userCode}.');
+  while (true) {
+    await Future.delayed(result.pollInterval);
+    _pollForToken(result.deviceCode).toString();
   }
 }
 
-Future<void> getToken() async {
-  final credentials = await readCredentialsFromLocal();
-
-  if (credentials?.isValid() ?? false) {
-    /// unpub-credentials.json is valid.
-    /// Refresh and write it to file.
-    await refreshCredentials(credentials!);
-  } else {
-    /// unpub-credentials.json is not exist or invalid.
-    /// We should get a new Credentials file.
-    Utils.stdoutPrint('${Utils.credentialsFilePath} is not found or invalid.'
-        '\nPlease call unpub_auth login first.');
-    exit(1);
-  }
-  return;
-}
-
-Future<void> _goAuth() async {
-  final client = await clientWithAuthorization();
-  writeNewCredentials(client.credentials);
-  Utils.stdoutPrint(client.credentials.accessToken);
-}
-
-/// Write the new credentials file to unpub-credentials.json
-void writeNewCredentials(oauth2.Credentials credentials) {
-  File(Utils.credentialsFilePath).writeAsStringSync(credentials.toJson());
-}
-
-/// Refresh `accessToken` of credentials
-Future<void> refreshCredentials(oauth2.Credentials credentials) async {
-  final client = oauth2.Client(oauth2.Credentials.fromJson(credentials.toJson()), identifier: _identifier, secret: _secret,
-      onCredentialsRefreshed: (credential) async {
-    writeNewCredentials(credential);
-  });
-  await client.refreshCredentials();
-  Utils.stdoutPrint(client.credentials.accessToken);
-}
-
-/// Create a client with authorization.
-Future<oauth2.Client> clientWithAuthorization() async {
-  final grant = oauth2.AuthorizationCodeGrant(_identifier, Uri.parse(_authEndpoint), Uri.parse(_tokenEndpoint),
-      secret: _secret, basicAuth: false, httpClient: http.Client());
-
-  final completer = Completer();
-
-  final server = await Utils.bindServer('localhost', 43230);
-  shelf_io.serveRequests(server, (request) {
-    if (request.url.path == 'authorized') {
-      /// That's safe.
-      /// see [dart-lang/pub/lib/src/oauth2.dart#L238:L240](https://github.com/dart-lang/pub/blob/400f21e9883ce6555b66d3ef82f0b732ba9b9fc8/lib/src/oauth2.dart#L238:L240)
-      server.close();
-      return shelf.Response.ok(r'unpub Authorized Successfully.');
+Future<void> _pollForToken(String deviceCode) async {
+  final env = Env.instance;
+  final response = await _request(env.tokenUri, env.pollPostArgs(deviceCode));
+  if (response.statusCode != 200) {
+    final result = await _decodeResponse(response, (json) => ErrorResult.fromJson(json));
+    if (result.error == 'authorization_pending') {
+      // still pending, wait for next poll.
+      stdout.write('.');
+      return;
     }
 
-    if (request.url.path.isNotEmpty) {
-      /// Forbid all other requests.
-      return shelf.Response.notFound('Invalid URI.');
-    }
-
-    Utils.stdoutPrint('Authorization received, processing...');
-
-    /// Redirect to authorized page.
-    final resp = shelf.Response.found('http://localhost:${server.port}/authorized');
-
-    completer.complete(grant.handleAuthorizationResponse(Utils.queryToMap(request.url.query)));
-
-    return resp;
-  });
-
-  final authUrl = grant.getAuthorizationUrl(Uri.parse('http://localhost:${server.port}'), scopes: _scopes).toString() +
-      '&access_type=offline&approval_prompt=force';
-  Utils.stdoutPrint('unpub needs your authorization to upload packages on your behalf.\n'
-      'In a web browser, go to $authUrl\n'
-      'Then click "Allow access".\n\n'
-      'Waiting for your authorization...');
-
-  var client = await completer.future;
-  Utils.stdoutPrint('Successfully authorized.\n');
-  return client;
-}
-
-/// Read credential file from local path.
-Future<oauth2.Credentials?> readCredentialsFromLocal() async {
-  final credentialFile = File(Utils.credentialsFilePath);
-
-  final exists = await credentialFile.exists();
-  if (!exists) {
-    Utils.stdoutPrint('${Utils.credentialsFilePath} is not exist.\n'
-        'Please run `unpub_auth login` first');
-    return null;
+    // fell through to an actual error - exit/fail.
+    print('\nError:\n${result.errorDescription}');
+    exit(1);
   }
 
-  final fileContent = await credentialFile.readAsString();
+  // we authenticated if we got this far, save creds to file.
+  final result = await _decodeResponse(response, (json) => Token.fromJson(json, env.provider));
+  final file = File(Env.instance.credentialsFilePath);
+  file.writeAsStringSync(result.toJson());
 
-  return oauth2.Credentials.fromJson(fileContent);
+  print('\nAccess Token retrieved and saved to:\n${Env.instance.credentialsFilePath}');
+  exit(0);
 }
 
-/// Remove credential file from local path.
-Future<void> removeCredentialsFromLocal() async {
-  await File(Utils.credentialsFilePath).delete();
-  Utils.stdoutPrint('${Utils.credentialsFilePath} has been deleted.');
+Future<void> _importFile(String path) async {
+  // we are not checking the file for integrity, simply copying into the correct location.
+  final src = File(path);
+  if (!src.existsSync()) {
+    print('File not found: $path');
+    exit(1);
+  }
+
+  await src.copy(Env.instance.credentialsFilePath);
+}
+
+Future<void> _exportFile(String path) async {
+  final credsPath = Env.instance.credentialsFilePath;
+  final src = File(credsPath);
+  if (!src.existsSync()) {
+    print('File not found: $path');
+    exit(1);
+  }
+
+  // if we are exporting to a directory, we want to create a file with the same name as the original, in the new location
+  final dest = File(path);
+  if (dest.statSync().type == FileSystemEntityType.directory) path = p.join(path, p.basename(credsPath));
+  await src.copy(path);
 }
