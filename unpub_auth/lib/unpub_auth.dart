@@ -58,7 +58,31 @@ Future<void> _revokeToken() async {
   print('${Env.instance.credentialsFilePath} has been deleted.');
 }
 
-Future<void> _getToken() async {}
+Future<void> _getToken() async {
+  final env = Env.instance;
+  // load the token, update it from provider, then save it back to the file, return the new access token.
+  final file = File(env.credentialsFilePath);
+  if (!file.existsSync()) {
+    print('${env.credentialsFilePath} does not exist. You must call login first.');
+    exit(1);
+  }
+
+  final token = Token.fromJson(File(env.credentialsFilePath).readAsStringSync().decodeJson());
+  final response = await _request(env.tokenUri, env.refreshTokenPostArgs(token.refreshToken));
+
+  if (response.statusCode != 200) {
+    print('Failed to get token. You may need to call login first.');
+    final result = await _decodeResponse(response, (json) => ErrorResult.fromJson(json));
+    print('Error:\n${result.errorDescription}');
+    exit(1);
+  }
+
+  final result = await _decodeResponse(response, (json) => Token.fromJson(json));
+  final newToken = token.withTokens(result.accessToken, result.refreshToken, result.idToken, result.expiresIn);
+  file.writeAsStringSync(newToken.toJson());
+
+  print(newToken.accessToken);
+}
 
 Future<void> _loginWithDeviceCode() async {
   final env = Env.instance;

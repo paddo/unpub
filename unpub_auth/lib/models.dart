@@ -77,6 +77,17 @@ class Token {
         validFrom: json['valid_from'] == null ? null : DateTime.parse(json['valid_from']),
       );
 
+  Token withTokens(String accessToken, String refreshToken, String idToken, Duration expiresIn) => Token._(
+        provider: provider,
+        tokenType: tokenType,
+        scope: scope,
+        expiresIn: expiresIn,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        idToken: idToken,
+        validFrom: null,
+      );
+
   DateTime get validTo => validFrom.add(expiresIn);
 
   String toJson() => JsonEncoder.withIndent('    ').convert({

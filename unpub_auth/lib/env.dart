@@ -34,6 +34,8 @@ class Env {
 
   String pollPostArgs(String deviceCode) => _transformEncoded(_get('POLL_POST_ARGS')).replaceAll('{deviceCode}', deviceCode.urlEncode());
   String revokePostArgs(String refreshToken) => _transformEncoded(_get('REVOKE_POST_ARGS')).replaceAll('{refreshToken}', refreshToken.urlEncode());
+  String refreshTokenPostArgs(String refreshToken) =>
+      _transformEncoded(_get('REFRESH_TOKEN_POST_ARGS')).replaceAll('{refreshToken}', refreshToken.urlEncode());
 
   String _transformEncoded(String? value) => (value ?? '')
       .replaceAll('{scope}', scope.urlEncode())
@@ -70,6 +72,7 @@ class Env {
         'DEVICE_CODE_POST_ARGS': deviceCodePostArgs,
         'POLL_POST_ARGS': pollPostArgs('{deviceCode}'),
         'REVOKE_POST_ARGS': revokePostArgs('{refreshToken}'),
+        'REFRESH_TOKEN_POST_ARGS': refreshTokenPostArgs('{refreshToken}'),
       };
 
   Map<String, String> get _descriptions => {
@@ -84,6 +87,7 @@ class Env {
         'DEVICE_CODE_POST_ARGS': 'MANDATORY. Arguments to use when posting the device code.',
         'POLL_POST_ARGS': 'MANDATORY. Arguments to use when polling for the authorization code.',
         'REVOKE_POST_ARGS': 'Arguments to use when revoking tokens. Only needed for google provider',
+        'REFRESH_TOKEN_POST_ARGS': 'MANDATORY. Arguments to use when refreshing tokens.',
       };
 
   String get table {
