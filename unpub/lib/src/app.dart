@@ -317,6 +317,7 @@ class App {
       // TODO: Upload docs
       return shelf.Response.found(_resolveUrl(req, '/api/packages/versions/newUploadFinish'));
     } catch (err) {
+      print(err);
       return shelf.Response.found(_resolveUrl(req, '/api/packages/versions/newUploadFinish?error=$err'));
     }
   }

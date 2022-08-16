@@ -81,7 +81,7 @@ Future<void> _getToken() async {
   final newToken = token.withTokens(result.accessToken, result.refreshToken, result.idToken, result.expiresIn);
   file.writeAsStringSync(newToken.toJson());
 
-  print(newToken.accessToken);
+  print('Bearer ${newToken.accessToken}');
 }
 
 Future<void> _loginWithDeviceCode() async {
