@@ -90,6 +90,9 @@ Future<void> _loginWithDeviceCode() async {
 
   if (response.statusCode != 200) {
     print('Failed to get device code.\n${response.reasonPhrase}');
+    final body = await response.transform(utf8.decoder).join();
+    print(body);
+
     exit(1);
   }
 
