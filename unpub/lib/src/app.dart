@@ -492,7 +492,8 @@ class App {
 
   @Route.get('/main.dart.js')
   Future<shelf.Response> mainDartJs(shelf.Request req) async {
-    return shelf.Response.ok(main_dart_js.content, headers: {HttpHeaders.contentTypeHeader: 'text/javascript'});
+    return shelf.Response.forbidden(null);
+    //return shelf.Response.ok(main_dart_js.content, headers: {HttpHeaders.contentTypeHeader: 'text/javascript'});
   }
 
   String _getBadgeUrl(String label, String message, String color, Map<String, String> queryParameters) {
