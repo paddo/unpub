@@ -486,14 +486,12 @@ class App {
   @Route.get('/packages/<name>')
   @Route.get('/packages/<name>/versions/<version>')
   Future<shelf.Response> indexHtml(shelf.Request req) async {
-    return shelf.Response.forbidden(null);
-    //return shelf.Response.ok(index_html.content, headers: {HttpHeaders.contentTypeHeader: ContentType.html.mimeType});
+    return shelf.Response.ok(index_html.content, headers: {HttpHeaders.contentTypeHeader: ContentType.html.mimeType});
   }
 
   @Route.get('/main.dart.js')
   Future<shelf.Response> mainDartJs(shelf.Request req) async {
-    return shelf.Response.forbidden(null);
-    //return shelf.Response.ok(main_dart_js.content, headers: {HttpHeaders.contentTypeHeader: 'text/javascript'});
+    return shelf.Response.ok(main_dart_js.content, headers: {HttpHeaders.contentTypeHeader: 'text/javascript'});
   }
 
   String _getBadgeUrl(String label, String message, String color, Map<String, String> queryParameters) {
