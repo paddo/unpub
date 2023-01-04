@@ -32,13 +32,15 @@ Map<String, dynamic> _$UnpubVersionToJson(UnpubVersion instance) {
   writeNotNull('uploader', instance.uploader);
   writeNotNull('readme', instance.readme);
   writeNotNull('changelog', instance.changelog);
-  writeNotNull('createdAt', identity(instance.createdAt));
+  val['createdAt'] = identity(instance.createdAt);
   return val;
 }
 
 UnpubPackage _$UnpubPackageFromJson(Map<String, dynamic> json) => UnpubPackage(
       json['name'] as String,
-      (json['versions'] as List<dynamic>).map((e) => UnpubVersion.fromJson(e as Map<String, dynamic>)).toList(),
+      (json['versions'] as List<dynamic>)
+          .map((e) => UnpubVersion.fromJson(e as Map<String, dynamic>))
+          .toList(),
       json['private'] as bool,
       (json['uploaders'] as List<dynamic>?)?.map((e) => e as String).toList(),
       identity(json['createdAt'] as DateTime),
@@ -46,7 +48,8 @@ UnpubPackage _$UnpubPackageFromJson(Map<String, dynamic> json) => UnpubPackage(
       json['download'] as int?,
     );
 
-Map<String, dynamic> _$UnpubPackageToJson(UnpubPackage instance) => <String, dynamic>{
+Map<String, dynamic> _$UnpubPackageToJson(UnpubPackage instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'versions': instance.versions,
       'private': instance.private,
@@ -56,12 +59,16 @@ Map<String, dynamic> _$UnpubPackageToJson(UnpubPackage instance) => <String, dyn
       'download': instance.download,
     };
 
-UnpubQueryResult _$UnpubQueryResultFromJson(Map<String, dynamic> json) => UnpubQueryResult(
+UnpubQueryResult _$UnpubQueryResultFromJson(Map<String, dynamic> json) =>
+    UnpubQueryResult(
       json['count'] as int,
-      (json['packages'] as List<dynamic>).map((e) => UnpubPackage.fromJson(e as Map<String, dynamic>)).toList(),
+      (json['packages'] as List<dynamic>)
+          .map((e) => UnpubPackage.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
-Map<String, dynamic> _$UnpubQueryResultToJson(UnpubQueryResult instance) => <String, dynamic>{
+Map<String, dynamic> _$UnpubQueryResultToJson(UnpubQueryResult instance) =>
+    <String, dynamic>{
       'count': instance.count,
       'packages': instance.packages,
     };

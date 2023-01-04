@@ -8,7 +8,9 @@ part of 'models.dart';
 
 ListApi _$ListApiFromJson(Map<String, dynamic> json) => ListApi(
       json['count'] as int,
-      (json['packages'] as List<dynamic>).map((e) => ListApiPackage.fromJson(e as Map<String, dynamic>)).toList(),
+      (json['packages'] as List<dynamic>)
+          .map((e) => ListApiPackage.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$ListApiToJson(ListApi instance) => <String, dynamic>{
@@ -16,7 +18,8 @@ Map<String, dynamic> _$ListApiToJson(ListApi instance) => <String, dynamic>{
       'packages': instance.packages,
     };
 
-ListApiPackage _$ListApiPackageFromJson(Map<String, dynamic> json) => ListApiPackage(
+ListApiPackage _$ListApiPackageFromJson(Map<String, dynamic> json) =>
+    ListApiPackage(
       json['name'] as String,
       json['description'] as String?,
       (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
@@ -24,7 +27,8 @@ ListApiPackage _$ListApiPackageFromJson(Map<String, dynamic> json) => ListApiPac
       DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$ListApiPackageToJson(ListApiPackage instance) => <String, dynamic>{
+Map<String, dynamic> _$ListApiPackageToJson(ListApiPackage instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'description': instance.description,
       'tags': instance.tags,
@@ -32,17 +36,20 @@ Map<String, dynamic> _$ListApiPackageToJson(ListApiPackage instance) => <String,
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
 
-DetailViewVersion _$DetailViewVersionFromJson(Map<String, dynamic> json) => DetailViewVersion(
+DetailViewVersion _$DetailViewVersionFromJson(Map<String, dynamic> json) =>
+    DetailViewVersion(
       json['version'] as String,
       DateTime.parse(json['createdAt'] as String),
     );
 
-Map<String, dynamic> _$DetailViewVersionToJson(DetailViewVersion instance) => <String, dynamic>{
+Map<String, dynamic> _$DetailViewVersionToJson(DetailViewVersion instance) =>
+    <String, dynamic>{
       'version': instance.version,
       'createdAt': instance.createdAt.toIso8601String(),
     };
 
-WebapiDetailView _$WebapiDetailViewFromJson(Map<String, dynamic> json) => WebapiDetailView(
+WebapiDetailView _$WebapiDetailViewFromJson(Map<String, dynamic> json) =>
+    WebapiDetailView(
       json['name'] as String,
       json['version'] as String,
       json['description'] as String,
@@ -51,13 +58,18 @@ WebapiDetailView _$WebapiDetailViewFromJson(Map<String, dynamic> json) => Webapi
       DateTime.parse(json['createdAt'] as String),
       json['readme'] as String?,
       json['changelog'] as String?,
-      (json['versions'] as List<dynamic>).map((e) => DetailViewVersion.fromJson(e as Map<String, dynamic>)).toList(),
+      (json['versions'] as List<dynamic>)
+          .map((e) => DetailViewVersion.fromJson(e as Map<String, dynamic>))
+          .toList(),
       (json['authors'] as List<dynamic>).map((e) => e as String?).toList(),
-      (json['dependencies'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      (json['dependencies'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
     );
 
-Map<String, dynamic> _$WebapiDetailViewToJson(WebapiDetailView instance) => <String, dynamic>{
+Map<String, dynamic> _$WebapiDetailViewToJson(WebapiDetailView instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'version': instance.version,
       'description': instance.description,
