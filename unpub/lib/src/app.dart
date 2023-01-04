@@ -108,7 +108,7 @@ class App {
     return info.email!;
   }
 
-  Future<HttpServer> serve([String? host = '0.0.0.0', int port = 4000]) async {
+  Future<HttpServer> serve([String host = '0.0.0.0', int port = 4000]) async {
     var handler = const shelf.Pipeline().addMiddleware(corsHeaders()).addMiddleware(shelf.logRequests()).addHandler((req) async {
       // Return 404 by default
       // https://github.com/google/dart-neats/issues/1
@@ -192,7 +192,7 @@ class App {
     }
 
     if (packageStore.supportsDownloadUrl) {
-      return shelf.Response.found(packageStore.downloadUrl(name, version));
+      return shelf.Response.found(await packageStore.downloadUrl(name, version));
     } else {
       return shelf.Response.ok(
         packageStore.download(name, version),
