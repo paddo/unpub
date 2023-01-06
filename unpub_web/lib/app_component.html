@@ -16,20 +16,22 @@
     </div>
   </div>
 </header>
-<div class="_banner-bg">
-  <div class="container">
-    <div class="home-banner">
-      <form class="search-bar" action="/packages">
-        <input
-          class="input"
-          name="q"
-          placeholder="Search Dart packages"
-          autocomplete="on"
-          autofocus="autofocus"
-          [(ngModel)]="appService.keyword"
-        />
-        <button class="icon" (click)="submit()"></button>
-      </form>
+<div *ngIf="authenticated">
+  <div class="_banner-bg">
+    <div class="container">
+      <div class="home-banner">
+        <form class="search-bar" action="/packages">
+          <input
+            class="input"
+            name="q"
+            placeholder="Search Dart packages"
+            autocomplete="on"
+            autofocus="autofocus"
+            [(ngModel)]="appService.keyword"
+          />
+          <button class="icon" (click)="submit()"></button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

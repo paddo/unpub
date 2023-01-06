@@ -10,9 +10,11 @@ dependencies:
   angular_router: ^3.0.1
   http: ^0.13.4
   markdown: ^5.0.0
+  msal_js: 2.14.0
   unpub_api:
     path: ../unpub/lib/unpub_api
+
 dev_dependencies:
+  analyzer: ^2.0.0
   build_runner: ^2.2.0
   build_web_compilers: ^3.2.4
-  analyzer: ^2.0.0

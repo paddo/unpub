@@ -11,5 +11,6 @@ build:
 	cd unpub_web &&\
 	dart pub global activate webdev 2.7.10 &&\
 	dart pub global run webdev build
+	cd ..
 	dart unpub/tool/pre_publish.dart
-	dart format -l 150 **/*.dart
+	dart format -l 150 unpub/lib/src/static/*.dart

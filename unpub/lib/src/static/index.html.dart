@@ -1699,6 +1699,7 @@ const content = """<!DOCTYPE html>
     </style>
     <link rel="icon" type="image/png" href="https://pub.dev/favicon.ico" />
     <script defer src="main.dart.js"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.14.0/js/msal-browser.js"></script>
   </head>
   <body>
     <my-app>Loading...</my-app>
